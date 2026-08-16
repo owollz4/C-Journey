@@ -37,22 +37,61 @@ function sidebarLabel(filePath: string, fileName: string): string {
     return `第 ${parseInt(fileName, 10)} 章 ${core}`
 }
 
+/* 练习体系:documents/exercises/ 下按阶段分目录,每阶段 homework/lab/project 各带题面与参考答案。
+   只收录磁盘上真实存在的文件,练习分批上线时侧栏自动跟上,不会挂死链。 */
+const exerciseFiles = [
+    { file: 'homework', label: 'Homework · 题面' },
+    { file: 'homework-solutions', label: 'Homework · 参考答案' },
+    { file: 'lab', label: 'Lab · 题面' },
+    { file: 'lab-solutions', label: 'Lab · 实验参考' },
+    { file: 'project', label: 'Project · 题面' },
+    { file: 'project-solutions', label: 'Project · 参考实现' },
+]
+
+function buildExerciseSidebar() {
+    const exRoot = path.join(docsRoot, 'exercises')
+    if (!fs.existsSync(exRoot)) {
+        return []
+    }
+    return fs
+        .readdirSync(exRoot)
+        .filter((d) => fs.statSync(path.join(exRoot, d)).isDirectory())
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        .map((dir) => {
+            const stage = stages.find((s) => s.dir === dir)
+            return {
+                text: stage ? `练习 · ${stage.name}` : dir,
+                collapsed: true,
+                items: exerciseFiles
+                    .filter((ef) => fs.existsSync(path.join(exRoot, dir, `${ef.file}.md`)))
+                    .map((ef) => ({ text: ef.label, link: `/exercises/${dir}/${ef.file}` })),
+            }
+        })
+}
+
 function buildSidebar() {
-    return stages.map((stage) => {
-        const stageDir = path.join(docsRoot, stage.dir)
-        const files = fs
-            .readdirSync(stageDir)
-            .filter((f) => /^\d+-.*\.md$/.test(f))
-            .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
-        return {
-            text: stage.name,
-            collapsed: true, /* 默认折叠阶段、点击展开;当前阅读章所在阶段 VitePress 自动展开 */
-            items: files.map((f) => ({
-                text: sidebarLabel(path.join(stageDir, f), f),
-                link: `/${stage.dir}/${f.replace(/\.md$/, '')}`,
-            })),
-        }
-    })
+    return [
+        ...stages.map((stage) => {
+            const stageDir = path.join(docsRoot, stage.dir)
+            const files = fs
+                .readdirSync(stageDir)
+                .filter((f) => /^\d+-.*\.md$/.test(f))
+                .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+            return {
+                text: stage.name,
+                collapsed: true, /* 默认折叠阶段、点击展开;当前阅读章所在阶段 VitePress 自动展开 */
+                items: files.map((f) => ({
+                    text: sidebarLabel(path.join(stageDir, f), f),
+                    link: `/${stage.dir}/${f.replace(/\.md$/, '')}`,
+                })),
+            }
+        }),
+        {
+            text: '练习与作业',
+            collapsed: true,
+            items: [{ text: '练习总览', link: '/exercises/' }, ...buildExerciseSidebar()],
+        },
+    ]
 }
 
 export default defineConfig({
@@ -137,6 +176,7 @@ export default defineConfig({
             { text: '阶段 5 · 系统编程', link: '/05-system-programming/01-file-io-and-fd' },
             { text: '更新日志', link: '/changelog/' },
             { text: '路线图', link: '/roadmap' },
+            { text: '练习', link: '/exercises/' },
         ],
         sidebar: buildSidebar(),
         search: {
