@@ -128,7 +128,7 @@ related:
 
 ### 1.6-B {#hw-1-6-b}
 
-难度 **L3** · 涉及[第 6 章：位运算与移位](/01-c-basics/06-bitwise-and-shift)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+难度 **L3** · 涉及[第 6 章：位运算与移位](/01-c-basics/06-bitwise-and-shift)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 写一个 `int shift_left(int n) { return 1 << n; }`，用 UBSan（`-fsanitize=undefined`）分别以 `n = 31` 和 `n = 32` 调用，贴出两份报告（一份是「有符号左移溢出」、一份是「移位位数越界」——两个 UB 不一样！）。再写一个「安全版」：调用前检查 `n` 的范围，范围外的返回一个约定值，让 sanitizer 全绿。
 
@@ -200,7 +200,7 @@ related:
 
 ### 1.10-B {#hw-1-10-b}
 
-难度 **L3** · 涉及[第 10 章：数组](/01-c-basics/10-arrays)、[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)
+难度 **L3** · 涉及[第 10 章：数组](/01-c-basics/10-arrays)、[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)
 
 两道题。①用指定初始化器 `{[2] = 9, [4] = 7}` 初始化一个 5 元素数组，打印全部元素；再解释「初值列表比数组短，剩下的自动补 0」这条规则为什么让 `{0}` 能清零整个数组。②写一个栈数组越界**写**（下标越 1 格），分别用普通构建和 ASan 构建跑，贴出两种「报法」的差别，说清为什么普通构建下它可能「看起来没事」——这正是 UB 最阴险的地方。
 
@@ -236,7 +236,7 @@ related:
 
 ### 1.12-B {#hw-1-12-b}
 
-难度 **L2** · 涉及[第 12 章：基础 IO](/01-c-basics/12-basic-io)、[阶段 0 第 8 章](/00-dev-environment/08-warning-flags)
+难度 **L2** · 涉及[第 12 章：基础 IO](/01-c-basics/12-basic-io)、[阶段 0 第 8 章](/00-dev-environment/09-warning-flags)
 
 三道题。①用 `%5d`、`%-5d`、`%05d`、`%.2f` 打印一张对齐的小表格（三行数据），贴输出并逐条解释宽度/对齐/补零/精度的作用。②写 `printf("%d\n", 3.14);` 这类类型不匹配的代码，用 `-Wall` 编译观察 `-Wformat=` 警告，运行观察垃圾输出——解释为什么编译器在**调用点**发现不了这种错（变参函数的 `...`）。③问答：为什么 `printf(user_input)` 危险、`printf("%s", user_input)` 安全？说出攻击者可以在输入里塞什么。
 

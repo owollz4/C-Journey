@@ -216,7 +216,7 @@ static int parse_int(const char* s, int* out, error_ctx* err) {
 2. 三个词：`'xxx' is up to date.`（make 觉得啥都不用干，程序却还是旧行为）。→ 知识点：同上
 3. `main.o: main.c mod.h`（目标 `.o` 依赖它自己的 `.c` 加它 `#include` 的所有项目头）。→ 知识点：[第 4 章](/04-engineering/04-make-deep)「-MMD」一节
 4. 头文件被删/改名时，make 不会因为「找不到这个 prerequisite」罢工——`-MP` 给每个头补一条空 phantom 规则。→ 知识点：[第 4 章](/04-engineering/04-make-deep)「-MP 的 phantom 规则」一节
-5. 对，TAB 是语法；空格会报 `missing separator.  Stop.`。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/11-make-basics)
+5. 对，TAB 是语法；空格会报 `missing separator.  Stop.`。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/12-make-basics)
 6. `fatal error: genhdr.h: No such file or directory`（编译那条比生成器先跑）。→ 知识点：[第 4 章](/04-engineering/04-make-deep)「-jN：并行构建与那道阴险的竞态」一节
 
 ## 4.4-B {#hw-4-4-b}
@@ -297,7 +297,7 @@ clean:
 **思路**：① GLOB 只在 configure 那一次扫目录，加文件不 reconfigure 就不会进构建系统；② `CMAKE_BUILD_TYPE` 替单配置生成器选旗标，`NDEBUG` 把 `assert` 关成空操作。
 
 1. `beta.c` 躺在磁盘上、`main.c` 也调了它，但生成的 Makefile 里根本没有 `beta.c.o` → `undefined reference to 'beta'`；重新 configure 后新文件进源表、构建通过。→ 知识点：[第 5 章](/04-engineering/05-cmake-engineering)「GLOB_RECURSE 的坑」一节
-2. Debug 的 `C_FLAGS = -g`、Release 的 `C_FLAGS = -O3 -DNDEBUG`；Debug 版 `assert` 触发退出 134（128+SIGABRT），Release 版静默通过退出 0。→ 知识点：[第 5 章](/04-engineering/05-cmake-engineering)「多配置」一节、[阶段 0 第 9 章](/00-dev-environment/09-standards-and-optimization)
+2. Debug 的 `C_FLAGS = -g`、Release 的 `C_FLAGS = -O3 -DNDEBUG`；Debug 版 `assert` 触发退出 134（128+SIGABRT），Release 版静默通过退出 0。→ 知识点：[第 5 章](/04-engineering/05-cmake-engineering)「多配置」一节、[阶段 0 第 9 章](/00-dev-environment/10-standards-and-optimization)
 3. 多配置生成器（VS/Xcode/Ninja Multi-Config）不认 `CMAKE_BUILD_TYPE`，要用 `cmake --build build --config Release` 在构建期切。→ 知识点：同上（单配置 vs 多配置生成器）
 
 **验证输出**：
@@ -355,7 +355,7 @@ octa(5) = 40
 
 **思路**：① `$ORIGIN` 展开成「可执行文件自己所在目录」，`.so` 装在 `./libs/` 就必须写 `$ORIGIN/libs`，写 `$ORIGIN` 等于没设；② `-fvisibility=hidden` 把默认可见性改成隐藏，只有标了 `default` 的导出。
 
-1. 漏 `/libs` 的版本：`readelf -d` 里 RUNPATH 是 `[$ORIGIN]`、字面值看起来没毛病，运行照样 `cannot open shared object file`（退出 127）——报错和「完全没设 RPATH」一模一样；改成 `\$ORIGIN/libs` 后正常跑出 42。→ 知识点：[第 6 章](/04-engineering/06-libs-and-linking)「RPATH/RUNPATH/$ORIGIN」一节（$ORIGIN 指可执行所在目录、路径要拼对）
+1. 漏 `/libs` 的版本：`readelf -d` 里 RUNPATH 是 `[$ORIGIN]`、字面值看起来没毛病，运行照样 `cannot open shared object file`（退出 127）——报错和「完全没设 RPATH」一模一样；改成 `\$ORIGIN/libs` 后正常跑出 42。→ 知识点：[第 6 章](/04-engineering/06-libs-and-linking)「RPATH/RUNPATH/`$ORIGIN`」一节（`$ORIGIN` 指可执行所在目录、路径要拼对）
 2. 默认编译 `nm -D` 导出 `core_pub` + `core_secret` 两个 `T`；加 `-fvisibility=hidden` 后只剩 `core_pub`，普通 `nm` 显示 `core_secret` 降级成小写 `t`（local，不导出），`static` 的 helper 本来就是 `t`。→ 知识点：[第 6 章](/04-engineering/06-libs-and-linking)「-fvisibility=hidden」一节
 
 **验证输出**：
@@ -493,7 +493,7 @@ static int mock_sensor(int* out) {
 **思路**：产品代码一行不改（照题面往 **fd 1** 打日志），链接期 `-Wl,--wrap,write` 只改写**本工程目标文件**里对 `write` 的引用；动态链接的 `printf` 在 libc 内部调用 `write`，**根本不经过** `--wrap` 这个链接期符号——所以测试自己照常 `printf`、与截获的 `write` 互不干扰（实测 `last_fd=1、last_len=12`，断言全过，`printf` 照常打屏）。
 
 1. `__wrap_write` 签名必须和真实 `write` 完全一致（`ssize_t (int, const void*, size_t)`）：记下被调次数、最后一次的 `len`，返回 count 假装成功、**不真写**。→ 知识点：[第 8 章](/04-engineering/08-mock-and-isolation)「第二招：链接期 --wrap」一节
-2. `objdump` 显示 `logger_emit` 里 `call 11a7 <__wrap_write>`——调用目标被链接器改写，不是 libc 的 `write`；`nm` 佐证可执行文件里只有 `__wrap_write` 没有 `write`。→ 知识点：[第 8 章](/04-engineering/08-mock-and-isolation)（--wrap 是链接期魔法）、[阶段 0 第 5 章](/00-dev-environment/05-object-files-and-symbols)（nm 看符号）
+2. `objdump` 显示 `logger_emit` 里 `call 11a7 <__wrap_write>`——调用目标被链接器改写，不是 libc 的 `write`；`nm` 佐证可执行文件里只有 `__wrap_write` 没有 `write`。→ 知识点：[第 8 章](/04-engineering/08-mock-and-isolation)（--wrap 是链接期魔法）、[阶段 0 第 5 章](/00-dev-environment/06-object-files-and-symbols)（nm 看符号）
 
 **验证输出**：
 
@@ -567,7 +567,7 @@ $1 = (int *) 0x0
 
 **思路**：`-O2` 把 `start=12` 整条链在编译期折叠：`collatz_steps` 被内联、`steps/doubled/result` 都被算出常量，运行时内存里根本没留位置，gdb 只能回 `<optimized out>`。
 
-1. `-O0` 版：断点停稳，`steps=9 doubled=18`、`info locals` 五个变量全在。→ 知识点：[第 9 章](/04-engineering/09-gdb-multi-thread)「-O2 的变量失踪」一节、[阶段 0 第 9 章](/00-dev-environment/09-standards-and-optimization)
+1. `-O0` 版：断点停稳，`steps=9 doubled=18`、`info locals` 五个变量全在。→ 知识点：[第 9 章](/04-engineering/09-gdb-multi-thread)「-O2 的变量失踪」一节、[阶段 0 第 9 章](/00-dev-environment/10-standards-and-optimization)
 2. `-O2` 版：同一断点 `print steps` → `<optimized out>`（本机这次 `doubled/result` 被优化掉、`start` 反而幸存——见 `info locals` 里的 `start = 12`）；`nm` 对比：`-O0` 有 `t collatz_steps`，`-O2` **符号整个消失**（被内联）。→ 知识点：同上
 3. `volatile` 兜底要如实读输出：标了 `volatile` 的 `steps` 回来了（`$1 = 9`），但 `doubled/result` 依然 `<optimized out>`、`collatz_steps` 仍被内联——**volatile 只保住被标的那一个变量**，不是「保住全场」，这是本题相对教材结论的一处诚实细化。→ 知识点：同上（volatile 的代价与边界）
 

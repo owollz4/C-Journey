@@ -25,7 +25,7 @@ related:
 
 **思路**：库函数只管「算」，CLI 只管「解析参数 + 调用」，除零检查放在 CLI 层（这是工程上常见的分层——库保持简单，策略在调用侧）。Makefile 用变量 + 模式规则把编译压到两条；`test.sh` 是第一个「测试门」的雏形。
 
-**`include/calc.h`**——头文件契约：include guard 防重复包含，只放声明不放实现。→ 知识点：[第 11 章：make 入门](/00-dev-environment/11-make-basics)（多文件项目的头文件）、[阶段 1 第 1 章](/01-c-basics/01-program-structure-and-compilation)（声明与定义的分离，预告）
+**`include/calc.h`**——头文件契约：include guard 防重复包含，只放声明不放实现。→ 知识点：[第 11 章：make 入门](/00-dev-environment/12-make-basics)（多文件项目的头文件）、[阶段 1 第 1 章](/01-c-basics/01-program-structure-and-compilation)（声明与定义的分离，预告）
 
 ```c
 #ifndef CALC_H
@@ -39,7 +39,7 @@ int calc_div(int a, int b);
 #endif
 ```
 
-**`src/calc.c`**——四个函数各一行，朴素到不能再朴素；`calc_div` 里埋着的 `INT_MIN / -1` 雷，我们故意留到第三层让 sanitizer 来抓。→ 知识点：[第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)（UB 平时不发作，发作就换着花样）
+**`src/calc.c`**——四个函数各一行，朴素到不能再朴素；`calc_div` 里埋着的 `INT_MIN / -1` 雷，我们故意留到第三层让 sanitizer 来抓。→ 知识点：[第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)（UB 平时不发作，发作就换着花样）
 
 ```c
 #include "calc.h"
@@ -61,7 +61,7 @@ int calc_div(int a, int b) {
 }
 ```
 
-**`src/main.c`**——CLI 解析 `argv`：`argc != 4` 先挡掉错误用法，`atoi` 把参数转整数，`strcmp` 分派到对应函数；除零在调用前拦下（真调了就是 UB 崩溃，不能赌）。`argv` 这套命令行参数在阶段 1 会细讲，这里先照猫画虎，重点是**分层**和**防御**。→ 知识点：[第 6 章：链接与静态库](/00-dev-environment/06-linking-and-static-libs)（多文件协作）、阶段 1 第 8 章（函数与 `main` 参数，预告）
+**`src/main.c`**——CLI 解析 `argv`：`argc != 4` 先挡掉错误用法，`atoi` 把参数转整数，`strcmp` 分派到对应函数；除零在调用前拦下（真调了就是 UB 崩溃，不能赌）。`argv` 这套命令行参数在阶段 1 会细讲，这里先照猫画虎，重点是**分层**和**防御**。→ 知识点：[第 6 章：链接与静态库](/00-dev-environment/07-linking-and-static-libs)（多文件协作）、阶段 1 第 8 章（函数与 `main` 参数，预告）
 
 ```c
 #include <stdio.h>
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 }
 ```
 
-**`Makefile`**——`CC`/`CFLAGS` 变量、模式规则、`test` 伪目标、`clean` + `.PHONY` 全齐。→ 知识点：[第 11 章：make 入门](/00-dev-environment/11-make-basics)「变量」「自动变量与模式规则」「`.PHONY` 与 clean」三节
+**`Makefile`**——`CC`/`CFLAGS` 变量、模式规则、`test` 伪目标、`clean` + `.PHONY` 全齐。→ 知识点：[第 11 章：make 入门](/00-dev-environment/12-make-basics)「变量」「自动变量与模式规则」「`.PHONY` 与 clean」三节
 
 ```makefile
 CC = gcc
@@ -119,7 +119,7 @@ clean:
 .PHONY: test clean
 ```
 
-**`test.sh`**——回归测试：每个用例断言输出，错一个就 `fail=1`，最后 `exit $fail`——这就是「测试门」的最小形态，后面 CI 靠它做硬门。→ 知识点：[第 16 章：GitHub Actions](/00-dev-environment/16-github-actions)（CI 靠退出码当门，这里先埋下伏笔）
+**`test.sh`**——回归测试：每个用例断言输出，错一个就 `fail=1`，最后 `exit $fail`——这就是「测试门」的最小形态，后面 CI 靠它做硬门。→ 知识点：[第 16 章：GitHub Actions](/00-dev-environment/17-github-actions)（CI 靠退出码当门，这里先埋下伏笔）
 
 ```bash
 #!/usr/bin/env bash
@@ -193,20 +193,20 @@ $ grep '^C_FLAGS' build/CMakeFiles/main.dir/flags.make
 C_FLAGS = -std=c11        ← 严格 C11,不是 gnu11(EXTENSIONS OFF 生效)
 ```
 
-知识点：[第 12 章：CMake 入门](/00-dev-environment/12-cmake-basics)「最小 CMakeLists.txt」「Debug / Release」两节（`CMAKE_C_EXTENSIONS` 默认 ON 的坑）。
+知识点：[第 12 章：CMake 入门](/00-dev-environment/13-cmake-basics)「最小 CMakeLists.txt」「Debug / Release」两节（`CMAKE_C_EXTENSIONS` 默认 ON 的坑）。
 
 ## 再进阶任务（L4）：sanitizer 门与修复 {#pj-sanitize}
 
 **思路**：`INT_MIN / -1` 的结果 $2147483648$ 超出 `int` 表示范围，是 ISO C §6.5 第 5 段的 UB。普通构建下 x86 的 `idiv` 指令直接陷阱 → SIGFPE；sanitizer 构建下 UBSan 先把这条 UB 的来龙去脉讲清楚，ASan 再补上崩溃现场。
 
-**实验一：普通构建**——直接 `Floating point exception`（退出码 136 = 128+8），一个字的源码定位都没有。→ 知识点：[第 9 章：标准与优化](/00-dev-environment/09-standards-and-optimization)（UB 表现随环境漂移）、[第 13 章](/00-dev-environment/13-gdb-basics)（退出码 128+N 的含义）
+**实验一：普通构建**——直接 `Floating point exception`（退出码 136 = 128+8），一个字的源码定位都没有。→ 知识点：[第 9 章：标准与优化](/00-dev-environment/10-standards-and-optimization)（UB 表现随环境漂移）、[第 13 章](/00-dev-environment/14-gdb-basics)（退出码 128+N 的含义）
 
 ```text
 $ ./main div -2147483648 -1; echo "exit=$?"
 exit=136                      ← SIGFPE,只有一句浮点异常
 ```
 
-**实验二：sanitizer 构建**——UBSan 精确到 `src/calc.c:16:14`，ASan 给出调用链（`calc_div` 被 `main.c:25` 调用）。→ 知识点：[第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)「UBSan」「ASan」两节
+**实验二：sanitizer 构建**——UBSan 精确到 `src/calc.c:16:14`，ASan 给出调用链（`calc_div` 被 `main.c:25` 调用）。→ 知识点：[第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)「UBSan」「ASan」两节
 
 ```text
 $ make CFLAGS="-std=c11 -Wall -Wextra -Iinclude -O1 -g -fsanitize=address,undefined" \
@@ -218,7 +218,7 @@ src/calc.c:16:14: runtime error: division of -2147483648 by -1 cannot be represe
     #1 0x... in main src/main.c:25
 ```
 
-**修复**——在库里显式处理这条边界（`#include <limits.h>` 拿 `INT_MIN`），返回 0 并保持函数不崩；sanitizer 构建重跑全绿。→ 知识点：[第 10 章](/00-dev-environment/10-sanitizer-gate)（修复后非 0 退出码的门就过了）
+**修复**——在库里显式处理这条边界（`#include <limits.h>` 拿 `INT_MIN`），返回 0 并保持函数不崩；sanitizer 构建重跑全绿。→ 知识点：[第 10 章](/00-dev-environment/11-sanitizer-gate)（修复后非 0 退出码的门就过了）
 
 ```c
 #include <limits.h>
@@ -254,7 +254,7 @@ $ ./main add 2 3
 5
 ```
 
-**格式门**——先把 `if (argc != 4) {` 故意改乱成 `if(argc!=4){`，`--dry-run --Werror` 立刻红（退出码 1）；`-i` 修回后再查，退出码 0。→ 知识点：[第 17 章：格式化与质量门](/00-dev-environment/17-format-and-quality-gate)「clang-format 怎么用」一节
+**格式门**——先把 `if (argc != 4) {` 故意改乱成 `if(argc!=4){`，`--dry-run --Werror` 立刻红（退出码 1）；`-i` 修回后再查，退出码 0。→ 知识点：[第 17 章：格式化与质量门](/00-dev-environment/18-format-and-quality-gate)「clang-format 怎么用」一节
 
 ```text
 $ clang-format --dry-run --Werror src/main.c
@@ -321,7 +321,7 @@ jobs:
         run: clang-format --dry-run --Werror src/*.c include/*.h
 ```
 
-**`.gitignore`**——可执行产物、CMake 构建目录、目标文件全挡在版本库外。→ 知识点：[第 15 章：Git 工作流](/00-dev-environment/15-git-workflow)「远程、协作」一节
+**`.gitignore`**——可执行产物、CMake 构建目录、目标文件全挡在版本库外。→ 知识点：[第 15 章：Git 工作流](/00-dev-environment/16-git-workflow)「远程、协作」一节
 
 ```gitignore
 main
@@ -329,7 +329,7 @@ build/
 src/*.o
 ```
 
-**git 全程与本地复现**——`git init -b main`（默认分支名取决于你的 git 配置，本机默认是 `master`，所以要显式 `-b`）；提交信息按约定式提交；然后本地复现 format-check 与 sanitize 两个 job 的核心命令，退出码 0 就是 GitHub 上那个绿勾。→ 知识点：[第 15 章](/00-dev-environment/15-git-workflow)（约定式提交）、[第 16 章](/00-dev-environment/16-github-actions)「本地把这些 job 跑一遍」一节
+**git 全程与本地复现**——`git init -b main`（默认分支名取决于你的 git 配置，本机默认是 `master`，所以要显式 `-b`）；提交信息按约定式提交；然后本地复现 format-check 与 sanitize 两个 job 的核心命令，退出码 0 就是 GitHub 上那个绿勾。→ 知识点：[第 15 章](/00-dev-environment/16-git-workflow)（约定式提交）、[第 16 章](/00-dev-environment/17-github-actions)「本地把这些 job 跑一遍」一节
 
 ```text
 $ git init -b main

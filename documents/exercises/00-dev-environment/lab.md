@@ -28,7 +28,7 @@ Homework 是一道道独立的题，这个 Lab 则是一条贯穿的线：我们
 
 ## 步骤 1：四阶段停靠 {#lab-1}
 
-难度 **L1** · 涉及[第 2 章：编译四阶段全景](/00-dev-environment/02-save-temps-and-four-stages)
+难度 **L1** · 涉及[第 2 章：编译四阶段全景](/00-dev-environment/03-save-temps-and-four-stages)
 
 **目标**：把 `hello` 的四段流水线（预处理 → 编译 → 汇编 → 链接）在每一站停下来看产物。
 
@@ -42,7 +42,7 @@ Homework 是一道道独立的题，这个 Lab 则是一条贯穿的线：我们
 
 ## 步骤 2：预处理侦探 {#lab-2}
 
-难度 **L2** · 涉及[第 3 章：预处理深入](/00-dev-environment/03-preprocessor-deep-dive)
+难度 **L2** · 涉及[第 3 章：预处理深入](/00-dev-environment/04-preprocessor-deep-dive)
 
 **目标**：用 `gcc -E` 当场拆穿「条件编译走了哪一支」。
 
@@ -56,7 +56,7 @@ Homework 是一道道独立的题，这个 Lab 则是一条贯穿的线：我们
 
 ## 步骤 3：符号与重定位透视 {#lab-3}
 
-难度 **L2** · 涉及[第 5 章：目标文件与符号](/00-dev-environment/05-object-files-and-symbols)
+难度 **L2** · 涉及[第 5 章：目标文件与符号](/00-dev-environment/06-object-files-and-symbols)
 
 **目标**：用 `nm` 和 `readelf -r` 读懂一个 `.o` 随身带的两张表。
 
@@ -70,7 +70,7 @@ Homework 是一道道独立的题，这个 Lab 则是一条贯穿的线：我们
 
 ## 步骤 4：静态库与顺序陷阱 {#lab-4}
 
-难度 **L3** · 涉及[第 6 章：链接与静态库](/00-dev-environment/06-linking-and-static-libs)
+难度 **L3** · 涉及[第 6 章：链接与静态库](/00-dev-environment/07-linking-and-static-libs)
 
 **目标**：亲手打包 `.a`，再故意把链接顺序写反，看报错长什么样。
 
@@ -84,7 +84,7 @@ Homework 是一道道独立的题，这个 Lab 则是一条贯穿的线：我们
 
 ## 步骤 5：sanitizer 抓 UB {#lab-5}
 
-难度 **L3** · 涉及[第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+难度 **L3** · 涉及[第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 **目标**：埋一个越界写，让 ASan/UBSan 当场把它钉死在源码行上。
 
@@ -98,7 +98,7 @@ Homework 是一道道独立的题，这个 Lab 则是一条贯穿的线：我们
 
 ## 步骤 6：GDB 崩溃定位 {#lab-6}
 
-难度 **L4** · 涉及[第 13 章：GDB 基础](/00-dev-environment/13-gdb-basics)（缓冲丢失的分析在那一章的「靶子程序」一节）
+难度 **L4** · 涉及[第 13 章：GDB 基础](/00-dev-environment/14-gdb-basics)（缓冲丢失的分析在那一章的「靶子程序」一节）
 
 **目标**：一个段错误程序，用 GDB 事后定位根因，全程不写 printf。
 

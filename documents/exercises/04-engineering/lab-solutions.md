@@ -98,7 +98,7 @@ clean:
 **思路**：`stats` 库的 `target_include_directories` 标 PUBLIC、`-Wall -Wextra` 标 PRIVATE、`c_std_11` 标 PUBLIC；两个 build 目录各配一个 `CMAKE_BUILD_TYPE`。
 
 1. Debug `C_FLAGS = -g -Wall -Wextra`、Release `C_FLAGS = -O3 -DNDEBUG -Wall -Wextra`——`-Wall -Wextra` 是项目自己 PRIVATE 挂的、两边都在；`-g` 和 `-O3 -DNDEBUG` 是 CMake 按构建类型选的。→ 知识点：[第 5 章：CMake 工程化](/04-engineering/05-cmake-engineering)「多配置」一节
-2. `NDEBUG` 由 Release 的 `-DNDEBUG` 带进来，把 `assert` 展开成空操作：Debug 版 `assert` 触发退出 134（128+SIGABRT），Release 版静默通过退出 0。→ 知识点：[第 5 章](/04-engineering/05-cmake-engineering)、[阶段 0 第 9 章](/00-dev-environment/09-standards-and-optimization)
+2. `NDEBUG` 由 Release 的 `-DNDEBUG` 带进来，把 `assert` 展开成空操作：Debug 版 `assert` 触发退出 134（128+SIGABRT），Release 版静默通过退出 0。→ 知识点：[第 5 章](/04-engineering/05-cmake-engineering)、[阶段 0 第 9 章](/00-dev-environment/10-standards-and-optimization)
 
 **验证输出**：
 
@@ -150,7 +150,7 @@ $ ./build/test_stats
 
 1. sanitizer 下 ctest：`test_range_normal` 刚开跑，ASan 就甩 `heap-use-after-free`——`READ of size 4`、三段栈（非法读 → `freed by thread T0 here` → `previously allocated by thread T0 here`）、退出码 8。→ 知识点：[第 10 章：ASan+UBSan 深入](/04-engineering/10-sanitizer-deep)（三段式报告读法）
 2. 修复：把 free 之后的「防御性校验」整个删掉（数据刚拷进副本、校验本无意义），`*out = hi - lo` 直接返回。重跑 ctest `1/1 Passed`。→ 知识点：[第 16 章：工程化毕业项目](/04-engineering/16-capstone)（clib 的 sanitizer 发现同款收尾）
-3. 格式门：先 `clang-format -i` 归一化再 `--dry-run --Werror`，退出 0——LLVM 基底、4 空格缩进、左贴指针、转换后带空格（`(size_t) n`）。→ 知识点：[阶段 0 第 17 章：格式化与质量门](/00-dev-environment/17-format-and-quality-gate)
+3. 格式门：先 `clang-format -i` 归一化再 `--dry-run --Werror`，退出 0——LLVM 基底、4 空格缩进、左贴指针、转换后带空格（`(size_t) n`）。→ 知识点：[阶段 0 第 17 章：格式化与质量门](/00-dev-environment/18-format-and-quality-gate)
 
 **验证输出**：
 

@@ -110,7 +110,7 @@ related:
 
 ### 4.5-B {#hw-4-5-b}
 
-难度 **L3** · 涉及[第 5 章：CMake 工程化](/04-engineering/05-cmake-engineering)、[阶段 0 第 9 章：标准与优化](/00-dev-environment/09-standards-and-optimization)
+难度 **L3** · 涉及[第 5 章：CMake 工程化](/04-engineering/05-cmake-engineering)、[阶段 0 第 9 章：标准与优化](/00-dev-environment/10-standards-and-optimization)
 
 两道实验。① **GLOB_RECURSE 的坑**：写一个 `file(GLOB_RECURSE ...)` 收源的小工程（`src/alpha.c` 定义 `int alpha(void)`，`main.c` 调用），配置构建跑通；再加一个 `src/beta.c`、改 `main.c` 同时调 `alpha()` 和 `beta()`，**只 build 不 reconfigure**，贴出链接报错；然后重新 configure 修好。解释为什么「新文件明明在磁盘上」却没被编进来。② **多配置**：写一个带 `assert(x % 2 == 0)` 的程序，分别配 Debug 和 Release 两个 build 目录，`grep` 两个 `flags.make` 里的 `C_FLAGS`，贴出来；Debug 版传奇数运行、Release 版传奇数运行，各贴退出码。解释 `NDEBUG` 对 `assert` 做了什么。加一问（不用跑）：在 Visual Studio 这种多配置生成器上，`cmake -DCMAKE_BUILD_TYPE=Release` 为什么不生效、该用什么姿势切配置？
 
@@ -164,7 +164,7 @@ related:
 
 ### 4.8-B {#hw-4-8-b}
 
-难度 **L3** · 涉及[第 8 章：Mock 与隔离](/04-engineering/08-mock-and-isolation)、[阶段 0 第 5 章：目标文件与符号](/00-dev-environment/05-object-files-and-symbols)
+难度 **L3** · 涉及[第 8 章：Mock 与隔离](/04-engineering/08-mock-and-isolation)、[阶段 0 第 5 章：目标文件与符号](/00-dev-environment/06-object-files-and-symbols)
 
 教材用 `--wrap=read` 演示了链接期替换，这里换方向——wrap 写。产品代码 `int logger_emit(const char* msg)`：直接调 `write(1, msg, strlen(msg))` 把一行日志写进 stdout，**一行都不为测试改动**。测试里定义 `__wrap_write`（签名必须和真实 `write` 完全一致）：记下被调次数、最后一次的 `len`，返回 `len`（假装写成功），**不真写**。断言被调 1 次、`len` 等于日志长度。编译链接加 `-Wl,--wrap,write`，跑通后用 `objdump -d` 把 `logger_emit` 里那个 `call` 的目标贴出来，证明它跳到的是 `__wrap_write` 而不是 libc 的 `write`。说出 `--wrap` 的代价（对读产品代码的人意味着什么）。
 
@@ -182,7 +182,7 @@ related:
 
 ### 4.9-B {#hw-4-9-b}
 
-难度 **L4** · 涉及[第 9 章：gdb 实战](/04-engineering/09-gdb-multi-thread)、[阶段 0 第 9 章：标准与优化](/00-dev-environment/09-standards-and-optimization)
+难度 **L4** · 涉及[第 9 章：gdb 实战](/04-engineering/09-gdb-multi-thread)、[阶段 0 第 9 章：标准与优化](/00-dev-environment/10-standards-and-optimization)
 
 教材用「常量折叠的求和」演示 `-O2` 变量失踪，这里换一个更阴的：Collatz 步数。写 `static int collatz_steps(int n)`（偶数 $\frac{n}{2}$、奇数 $3n+1$，数到 1 的步数）和 `main`：`int start = 12; int steps = collatz_steps(start); int doubled = steps * 2; int result = doubled + 1;` 打印 result。分别用 `-O0` 和 `-O2` 编（都带 `-g`），各用 gdb batch 模式在打印行打断点：`print steps`、`print doubled`、`info locals`。贴两份对照输出：`-O0` 下都读得到，`-O2` 下哪个变量 `optimized out` 了？再用 `nm` 对比两个可执行文件里有没有 `collatz_steps` 符号，解释它去哪了。最后给 `steps` 加 `volatile` 重编 `-O2`，再 print 一次验证「强制留内存位置」的兜底，并说出 `volatile` 的代价。
 
@@ -218,7 +218,7 @@ related:
 
 ### 4.11-B {#hw-4-11-b}
 
-难度 **L3** · 涉及[第 11 章：valgrind 与 sanitizer 的分工](/04-engineering/11-valgrind)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+难度 **L3** · 涉及[第 11 章：valgrind 与 sanitizer 的分工](/04-engineering/11-valgrind)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 两道实验。① **ASan 抓不到的那一类**：写教材的 uninit 程序变式（`malloc` 一个 `int` 不赋值、拿去 `if (*p > 100)` 判断）。先带 `-fsanitize=address,undefined` 编译运行，贴退出码与「一声不吭」的事实；再用 valgrind 跑（**本机 Arch 的动态链接会被 strip 过的 ld-linux 卡住，按教材的 `-static` 绕法**），贴 memcheck 那句 `Conditional jump ...` 和它指的行号。如果你所在环境没装 valgrind，如实标注「未验证」，只答「valgrind 会报什么、为什么 ASan 报不了」。② **TSan 抓竞争**：两线程各做 50 万次 `counter++`，用 `gcc -fsanitize=thread` 编译运行，贴 data race 报告与退出码；解释为什么「这次 counter 恰好打出了期望值」也**不代表**程序是对的。
 

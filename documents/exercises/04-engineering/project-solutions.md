@@ -293,7 +293,7 @@ ctest exit=0
 1. INTERFACE 宏：`grep CLOG build/CMakeFiles/test_clog.dir/flags.make` → `C_DEFINES = -DCLOG_LIB_VERSION=1`——库自己的 `.c` 从来没用过它，它专门传给消费者。→ 知识点：[第 5 章](/04-engineering/05-cmake-engineering)（INTERFACE 传染给上游）
 2. sanitizer 门：CI flags 重编重跑 ctest，`1/1 Passed`、退出 0。→ 知识点：[第 10 章：ASan+UBSan 深入](/04-engineering/10-sanitizer-deep)
 3. 静态分析门：clang-tidy 报告「34 warnings generated. Suppressed 34 warnings (34 in non-user code)」——34 条全在系统头里被 `HeaderFilterRegex` 压掉，`src/clog.c` 零 finding。→ 知识点：[第 12 章：静态分析门](/04-engineering/12-static-analysis)
-4. 格式门：`clang-format --dry-run --Werror` 退出 0。→ 知识点：[阶段 0 第 17 章](/00-dev-environment/17-format-and-quality-gate)
+4. 格式门：`clang-format --dry-run --Werror` 退出 0。→ 知识点：[阶段 0 第 17 章](/00-dev-environment/18-format-and-quality-gate)
 5. 覆盖率门：baseline 五条用例 `Lines 76.32% of 38`、`Taken 61.54% of 13`——死的全是 `level_name` 的 ERROR/WARN/DEBUG/default 四个 case（默认 sink 只有 demo 用、测试全走 spy，`level_name` 基本没被执行）。补三条用例（ERROR 边界过滤、超长截断、恢复默认 sink 走全五个 case 含非法级别 99）后 `Lines 100.00%`、`Taken 100.00%`。→ 知识点：[第 13 章：覆盖率门](/04-engineering/13-coverage)（分支覆盖比行覆盖狠；补用例→数字涨）
 
 **验证输出**：

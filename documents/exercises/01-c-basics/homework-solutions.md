@@ -226,7 +226,7 @@ $ gcc -std=c11 -Wall shortc2.c -o shortc2 && ./shortc2
 **思路**：同一表达式里对 `i` 两次修改、中间没有序列点 → UB（§6.5¶2）。`-Wsequence-point` 编译期就能提醒；运行结果纯属编译器心情。
 
 1. `gcc -Wall` 报 `operation on 'i' may be undefined [-Wsequence-point]`。→ 知识点：[第 5 章](/01-c-basics/05-operators-basics)「优先级、结合性，以及求值顺序的 UB」一节
-2. 本机 `-O0` 和 `-O2` 都跑出 `j=4, i=3`——**这次恰好一致，不代表有保证**；换编译器、换版本就可能变。这正是 UB 的定义：标准撒手。→ 知识点：[阶段 0 第 9 章](/00-dev-environment/09-standards-and-optimization)（「我测过」不作数）
+2. 本机 `-O0` 和 `-O2` 都跑出 `j=4, i=3`——**这次恰好一致，不代表有保证**；换编译器、换版本就可能变。这正是 UB 的定义：标准撒手。→ 知识点：[阶段 0 第 9 章](/00-dev-environment/10-standards-and-optimization)（「我测过」不作数）
 3. 规避：拆成两行（`int a = i++; int b = ++i;`），每行各自有序列点，行为确定。→ 知识点：[第 5 章](/01-c-basics/05-operators-basics)（拆行最稳；逗号运算符、`&&`/`||`、`?:` 是少数有序列点的例外）
 
 **验证输出**：
@@ -267,7 +267,7 @@ $ gcc -std=c11 -Wall flags2.c -o flags2 && ./flags2
 
 **思路**：`1 << 31` 和 `1 << 32` 是两个**不同的** UB：前者是「有符号左移溢出」（§6.5.7¶4：有符号左移结果不可表示即 UB），后者是「移位位数越界」（§6.5.7¶3）。UBSan 都能抓，但报的词不一样。
 
-1. 两个函数分开写（同一行会被 UBSan 去重只报一次），UBSan 各报一条：`left shift of 1 by 31 places cannot be represented in type 'int'`（结果越界）与 `shift exponent 32 is too large for 32-bit type 'int'`（指数越界）。→ 知识点：[第 6 章](/01-c-basics/06-bitwise-and-shift)「移位的两个 UB 坑」一节、[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)（UBSan 精确到行列）
+1. 两个函数分开写（同一行会被 UBSan 去重只报一次），UBSan 各报一条：`left shift of 1 by 31 places cannot be represented in type 'int'`（结果越界）与 `shift exponent 32 is too large for 32-bit type 'int'`（指数越界）。→ 知识点：[第 6 章](/01-c-basics/06-bitwise-and-shift)「移位的两个 UB 坑」一节、[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)（UBSan 精确到行列）
 2. 安全版：调用前检查 `0 <= n <= 30`（对 `int` 而言），范围外返回约定值 `-1`，sanitizer 全绿。→ 知识点：[第 6 章](/01-c-basics/06-bitwise-and-shift)（位数是变量时先检查范围；移位默认用 `unsigned` 最稳）
 
 **验证输出**：
@@ -327,7 +327,7 @@ C                       ← 静默,编译器知道你是故意的
 **思路**：①C 的参数是值传递——函数改的是副本。②递归必须有基线；基线不覆盖所有输入（比如负数），就无限递归直到栈爆。
 
 1. `swap(3, 7)` 后 `x=3 y=7` 纹丝不动。→ 知识点：[第 8 章：函数](/01-c-basics/08-functions)「参数是『值传递』」一节（想让函数改调用者的变量要靠指针，阶段 2）
-2. `power(2, 10) = 1024` 正常；`power(2, -1)` 时 `exp == 0` 基线永远够不着、一路减到栈爆 → SIGSEGV（退出码 139）。注意它的 `printf` 输出连影都没有——进程被信号打死时 stdout 缓冲没机会刷，这个坑阶段 0 第 13 章讲过，这里又撞一次。→ 知识点：[第 8 章](/01-c-basics/08-functions)「递归」一节（基线必须完备、每次朝基线靠近）、[阶段 0 第 13 章](/00-dev-environment/13-gdb-basics)（缓冲丢失）
+2. `power(2, 10) = 1024` 正常；`power(2, -1)` 时 `exp == 0` 基线永远够不着、一路减到栈爆 → SIGSEGV（退出码 139）。注意它的 `printf` 输出连影都没有——进程被信号打死时 stdout 缓冲没机会刷，这个坑阶段 0 第 13 章讲过，这里又撞一次。→ 知识点：[第 8 章](/01-c-basics/08-functions)「递归」一节（基线必须完备、每次朝基线靠近）、[阶段 0 第 13 章](/00-dev-environment/14-gdb-basics)（缓冲丢失）
 
 **验证输出**：
 
@@ -431,7 +431,7 @@ a[1]=1, 1[a]=1
 **思路**：①指定初始化器只点零星位置，其余自动补 0。②越界写是 UB，普通构建下「看起来没事」正是它最阴险的地方。
 
 1. `int c[5] = {[2] = 9, [4] = 7};` 打印 `0 0 9 0 7`——没点的位置自动 0，这就是 `{0}` 能清零整个数组的原理。→ 知识点：[第 10 章](/01-c-basics/10-arrays)「初始化」一节（部分初始化补 0、C99 指派初始化器）
-2. `arr[3] = 99` 越界写：普通构建**静默通过**、退出码 0；ASan 构建报 `stack-buffer-overflow` 精确到 `desig.c:10`。→ 知识点：[第 10 章](/01-c-basics/10-arrays)「越界访问」一节、[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)（ASan 点名变量）
+2. `arr[3] = 99` 越界写：普通构建**静默通过**、退出码 0；ASan 构建报 `stack-buffer-overflow` 精确到 `desig.c:10`。→ 知识点：[第 10 章](/01-c-basics/10-arrays)「越界访问」一节、[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)（ASan 点名变量）
 
 **验证输出**：
 
@@ -524,7 +524,7 @@ n=42 c 的码=88       ← " %c" 跳空白,读到 'X'
 **思路**：①`[标志][宽度][.精度]` 控制对齐；②`printf` 是变参函数，编译器在调用点拿不到 `...` 的类型信息，只能靠 `-Wformat=` 这种「理解格式串语义」的特殊警告兜底；③用户输入当格式串 = 格式化字符串漏洞。
 
 1. `%5d` 右对齐宽 5、`%-5d` 左对齐、`%05d` 补零、`%.2f` 两位小数——三行数据对齐成表格。→ 知识点：[第 12 章](/01-c-basics/12-basic-io)「printf」一节
-2. `printf("%d\n", 3.14)`：`-Wformat=` 编译期警告，运行打出一个**每次运行都不同**的垃圾值（本机那次是 `1083993272`——x86-64 SysV 下 `double` 走 XMM 寄存器、`%d` 却去读通用寄存器，读到的纯属寄存器残留；别拿你的垃圾值对答案，每次都不一样才是正常的）。→ 知识点：[第 12 章](/01-c-basics/12-basic-io)「格式串与参数类型不匹配」一节、[阶段 0 第 8 章](/00-dev-environment/08-warning-flags)（`-Wformat=`）
+2. `printf("%d\n", 3.14)`：`-Wformat=` 编译期警告，运行打出一个**每次运行都不同**的垃圾值（本机那次是 `1083993272`——x86-64 SysV 下 `double` 走 XMM 寄存器、`%d` 却去读通用寄存器，读到的纯属寄存器残留；别拿你的垃圾值对答案，每次都不一样才是正常的）。→ 知识点：[第 12 章](/01-c-basics/12-basic-io)「格式串与参数类型不匹配」一节、[阶段 0 第 8 章](/00-dev-environment/09-warning-flags)（`-Wformat=`）
 3. `printf(user_input)` 里塞 `%x` 能读栈上内容、`%n` 甚至能写内存；正确写法 `printf("%s", user_input)` 把输入当数据而不是格式。→ 知识点：[第 12 章](/01-c-basics/12-basic-io)（别让外部数据控制格式串）
 
 **验证输出**：
@@ -613,7 +613,7 @@ $ gcc -std=c11 -Wall -Wextra -Wconversion students.c -o students && ./students
 
 1. 标志位：`0x05 = 0b101`，第 0 位（紧急）和第 2 位（重传）都是 1——用 `!!(flags & BIT)` 规范成 0/1。→ 知识点：[第 6 章](/01-c-basics/06-bitwise-and-shift)（标志位三件套的测试位）
 2. 长度：`(pkt[2] << 8) | pkt[3]` = `0x012C` = **300**；值：四字节拼接 = `0x00002710` = **10000**。关键细节：先转 `uint16_t/uint32_t` 再移位，否则 `uint8_t` 会被提升成 `int` 参与运算、左移 24 位就踩了有符号溢出的雷。→ 知识点：[第 3 章](/01-c-basics/03-integer-promotion-overflow)（整型提升：`uint8_t` 运算前先变 `int`）、[第 2 章](/01-c-basics/02-integer-types-and-sizeof)（定宽类型）、[第 6 章](/01-c-basics/06-bitwise-and-shift)（移位拼装）
-3. UBSan 全程零报告、`-Wall -Wextra` 零警告。→ 知识点：[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)
+3. UBSan 全程零报告、`-Wall -Wextra` 零警告。→ 知识点：[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)
 
 **验证输出**：
 

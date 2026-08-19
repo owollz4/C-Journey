@@ -97,7 +97,7 @@ static void do_list(void) {
 }
 ```
 
-**`Makefile`**——变量 + 模式规则 + `.PHONY`。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/11-make-basics)
+**`Makefile`**——变量 + 模式规则 + `.PHONY`。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/12-make-basics)
 
 ```makefile
 CC = gcc
@@ -155,8 +155,8 @@ static void do_max(void) {
 **思路**：健壮性 = 每个输入点都假设「用户会敲歪」；`-Wconversion` 逼你显式化每个可能丢数据的转换；sanitizer 和格式门是最后两道。
 
 1. 三个健壮性测试：缺参数 → 用法提示；`bad`/`101` → 成绩不合法；超长名字靠 `%31s` + `snprintf` 兜住。→ 知识点：[第 12 章](/01-c-basics/12-basic-io)（返回值是唯一可靠的校验手段）
-2. `-Wconversion -Werror`：所有隐式窄化转换显式写 `(double)` 等，零警告才算过。→ 知识点：[阶段 0 第 8 章](/00-dev-environment/08-warning-flags)「`-Wconversion`」一节
-3. sanitizer 会话零报告 + 格式门。→ 知识点：[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)、[阶段 0 第 17 章](/00-dev-environment/17-format-and-quality-gate)
+2. `-Wconversion -Werror`：所有隐式窄化转换显式写 `(double)` 等，零警告才算过。→ 知识点：[阶段 0 第 8 章](/00-dev-environment/09-warning-flags)「`-Wconversion`」一节
+3. sanitizer 会话零报告 + 格式门。→ 知识点：[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)、[阶段 0 第 17 章](/00-dev-environment/18-format-and-quality-gate)
 
 **验证输出**：
 

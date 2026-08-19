@@ -160,7 +160,7 @@ int main(void) {
 }
 ```
 
-**`Makefile`**——变量 + `clean`/`.PHONY`（阶段 0 的老规矩）。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/11-make-basics)
+**`Makefile`**——变量 + `clean`/`.PHONY`（阶段 0 的老规矩）。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/12-make-basics)
 
 ```makefile
 CC = gcc
@@ -352,7 +352,7 @@ $ ./dybook
 ... (完整会话见 L5,零报告)
 ```
 
-→ 知识点：[阶段 0 第 8 章](/00-dev-environment/08-warning-flags)（`-Wconversion`）、[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)（ASan/UBSan）
+→ 知识点：[阶段 0 第 8 章](/00-dev-environment/09-warning-flags)（`-Wconversion`）、[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)（ASan/UBSan）
 
 ## 终极挑战（L5）：转移表与原地去重 {#pj-l5}
 

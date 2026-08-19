@@ -129,7 +129,7 @@ if (WIFSIGNALED(last_status)) {
 }
 ```
 
-**`Makefile`**——变量 + 模式规则 + `.PHONY`。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/11-make-basics)
+**`Makefile`**——变量 + 模式规则 + `.PHONY`。→ 知识点：[阶段 0 第 11 章](/00-dev-environment/12-make-basics)
 
 ```makefile
 CC = gcc

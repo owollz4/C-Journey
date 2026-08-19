@@ -118,7 +118,7 @@ $ gcc -std=c11 -Wall -Wextra hw31a.c -o hw31a && ./hw31a
 
 1. 循环里命中 `val` 时：`prev == NULL` 说明要删的是头节点，`head` 后移一位；否则 `prev->next = cur->next` 让前驱跨过当前。两条路径都要先存住 `cur->next` 再 `free(cur)`——否则 free 完读 next 就是 use-after-free。→ 知识点：[第 1 章](/03-data-structures/01-singly-linked-list)「按值删除:记好前驱」「释放整表:先存 next，再 free 当前」两节
 2. 数据 `{3,7,3,2,3,5}` 里 3 出现在头、中、尾三处，正好逼着两条分支都走到。→ 知识点：[第 1 章](/03-data-structures/01-singly-linked-list)（删头特判是单链表删除绕不开的分支）
-3. ASan 复核：三个被删节点 + 三个幸存节点全部正确释放，退出码 0。→ 知识点：[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+3. ASan 复核：三个被删节点 + 三个幸存节点全部正确释放，退出码 0。→ 知识点：[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 ```c
 Node* remove_all(Node* head, int val, int* removed) {
@@ -761,7 +761,7 @@ asan_exit=0
 
 1. `ht_init` 用 `calloc` 分配桶数组（顺带清零）；`ht_rehash` 沿质数表找下一个质数，遍历每条旧桶链、`cur->next` 先存再改，重算哈希后头插进新桶。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)「负载因子与扩容」一节（教材交代的真实库做法）
 2. 为什么必须重哈希：`hash(key) = key % n_buckets` **依赖桶数**——桶数从 5 变 11，`7 % 5 == 2` 变成 `7 % 11 == 7`，只把桶数组变大、节点不搬，search 就再也找不到它们了。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)（rehash 的机制）
-3. 真跑：10 个全 `≡ 2 (mod 5)` 的 key 逼出两次 rehash（5→11 时 load=0.80、11→23 时 load=0.82），最终 23 桶、load 0.43；`ht_destroy` 逐桶 free 节点再 free 桶数组，ASan 复核 0。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)「释放」一节、[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)
+3. 真跑：10 个全 `≡ 2 (mod 5)` 的 key 逼出两次 rehash（5→11 时 load=0.80、11→23 时 load=0.82），最终 23 桶、load 0.43；`ht_destroy` 逐桶 free 节点再 free 桶数组，ASan 复核 0。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)「释放」一节、[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)
 
 ```c
 static int ht_rehash(HashTable* t, size_t new_n) {

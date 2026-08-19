@@ -114,7 +114,7 @@ sizeof(B)=8: i@0 c@4 d@5
 
 1. `format_line("Alice", 89.5)` 正常；超长名字触发截断，返回值 25 ≥ 20 打印警告。→ 知识点：[第 11 章：C 字符串与不安全 libc](/01-c-basics/11-c-strings-and-libc)「安全替代」一节（`snprintf` 的返回值语义）
 2. `fgets` 读到 `"hello world\n"`，把末尾 `\n` 换成 `\0` 后 len=11。→ 知识点：[第 11 章](/01-c-basics/11-c-strings-and-libc)（`fgets` 会存换行符）
-3. `strcpy(small, "This is way too long")`：gcc 编译期 `-Warray-bounds` 警告「写 21 字节进 5 字节对象」；ASan 运行期报 `stack-buffer-overflow`、`WRITE of size 21`、点名 `boom.c:5`。→ 知识点：[第 11 章](/01-c-basics/11-c-strings-and-libc)「缓冲区溢出」一节、[阶段 0 第 10 章](/00-dev-environment/10-sanitizer-gate)
+3. `strcpy(small, "This is way too long")`：gcc 编译期 `-Warray-bounds` 警告「写 21 字节进 5 字节对象」；ASan 运行期报 `stack-buffer-overflow`、`WRITE of size 21`、点名 `boom.c:5`。→ 知识点：[第 11 章](/01-c-basics/11-c-strings-and-libc)「缓冲区溢出」一节、[阶段 0 第 10 章](/00-dev-environment/11-sanitizer-gate)
 
 **验证输出**：
 

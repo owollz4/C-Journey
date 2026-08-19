@@ -95,7 +95,7 @@ related:
 
 ## 步骤 6：安全字符串 {#lab-6}
 
-难度 **L4** · 涉及[第 11 章：C 字符串与不安全 libc](/01-c-basics/11-c-strings-and-libc)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+难度 **L4** · 涉及[第 11 章：C 字符串与不安全 libc](/01-c-basics/11-c-strings-and-libc)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 **目标**：把阶段 1 的字符串安全三件套（`snprintf` 截断检测、`fgets` 换行处理、ASan 抓溢出）一次做完。
 

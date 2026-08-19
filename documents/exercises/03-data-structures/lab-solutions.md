@@ -94,7 +94,7 @@ asan_exit=0
 
 1. 8 个全挤 bucket[3]，第 6 个插入后负载因子 0.86 超阈值，rehash 到 17 桶：`3%17=3、10%17=10、17%17=0、24%17=7、31%17=14、38%17=4、45%17=11、52%17=1`，负载因子降到 0.471。→ 知识点：[第 8 章：哈希表:链地址法、哈希函数、冲突与 O(1) 平均查找](/03-data-structures/08-hash-table)「负载因子与扩容」一节
 2. 为什么必须重新哈希：`hash(key) = key % n_buckets` 依赖桶数——桶数 7 变 17，同一个 key 算出的桶下标会变；只把桶数组变大、节点不搬，`search` 拿着新桶数去算、永远找不到还挂在旧桶里的节点。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)（rehash 的机制）
-3. rehash 循环「先存 next → 新桶数重算 → 头插」全程复用节点、不重新 malloc，ASan 复核 0。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)（复用节点）、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+3. rehash 循环「先存 next → 新桶数重算 → 头插」全程复用节点、不重新 malloc，ASan 复核 0。→ 知识点：[第 8 章](/03-data-structures/08-hash-table)（复用节点）、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 **验证输出**：
 

@@ -38,7 +38,7 @@ related:
 
 ### 3.1-B {#hw-3-1-b}
 
-难度 **L3** · 涉及[第 1 章：单链表:节点、指针、把内存串成一条链](/03-data-structures/01-singly-linked-list)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/10-sanitizer-gate)
+难度 **L3** · 涉及[第 1 章：单链表:节点、指针、把内存串成一条链](/03-data-structures/01-singly-linked-list)、[阶段 0 第 10 章：Sanitizer 门禁](/00-dev-environment/11-sanitizer-gate)
 
 教材的 `remove_value` 只删第一个匹配的节点。现在写 `remove_all`：**删除链表中所有**等于 `val` 的节点，把删除个数写进 `int* removed` 带出来。场景：传感器读数清洗——链表中混进了异常值 3（数据 `{3, 7, 3, 2, 3, 5}`，注意 3 出现在头部、中间、尾部），要求全部剔除。删头节点（`prev == NULL`）和删中间节点两条路径都要覆盖，被删节点逐个 `free`。普通构建跑一遍，再用 `-fsanitize=address,undefined` 复核无泄漏。回答：为什么「删头」和「删中间」的指针接法不一样，漏写删头分支的后果是什么？
 

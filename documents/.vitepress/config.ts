@@ -199,6 +199,7 @@ export default defineConfig({
   markdown: {
     lineNumbers: true,
     theme: { light: "github-light", dark: "github-dark" },
+    math: true, // MathJax3:$...$ / $$...$$;非公式的 $ 一律进反引号(防误配对)
     config(md) {
       cppTemplateEscapePlugin(md); // 第二道:markdown-it 渲染期再兜一次(双层保险)
       codeFoldPlugin(md);
